@@ -23,33 +23,79 @@ cd pro-cc-coursehub
 cp .env.example .env
 ```
 
-3. `.env` の設定例
+3. `.env` の DB 設定を変更
+
+アプリは Docker コンテナ内で動作するため、`DB_HOST` には `127.0.0.1` ではなく MySQL のサービス名 `mysql` を指定します。
 
 ```
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=laravel
 DB_USERNAME=sail
 DB_PASSWORD=password
 ```
 
-4. Docker を起動
+4. Composer パッケージのインストール
+
+ホストに PHP / Composer がなくても、Docker 経由でインストールできます。`vendor/` がないと Sail のコンテナをビルドできないため、Docker 起動前に実行してください。
 
 ```bash
-docker compose up -d
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php82-composer:latest \
+    composer install --ignore-platform-reqs
 ```
 
-5. マイグレーション・シーディング
+5. Docker を起動
 
 ```bash
-php artisan migrate --seed
+./vendor/bin/sail up -d
 ```
+
+初回はイメージのビルドに数分〜10分程度かかります。
 
 6. アプリケーションキーの生成
 
 ```bash
-php artisan key:generate
+./vendor/bin/sail artisan key:generate
+```
+
+7. マイグレーション・シーディング
+
+MySQL コンテナの起動完了（`./vendor/bin/sail ps` で `healthy`）を待ってから実行してください。
+
+```bash
+./vendor/bin/sail artisan migrate --seed
+```
+
+8. フロントエンドのビルド
+
+```bash
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run build
+```
+
+開発中に変更を即時反映したい場合は `./vendor/bin/sail npm run dev` を使用します。
+
+> **Note:** `php artisan` などのコマンドはホストではなく、`./vendor/bin/sail artisan ...` のようにコンテナ内で実行します。
+
+### トラブルシューティング
+
+#### `port is already allocated` で起動できない
+
+他のプロジェクトのコンテナなどが同じポート（80 / 3306 / 5173 / 8080）を使用しています。以下のいずれかで対応してください。
+
+- 他のプロジェクトのコンテナを停止する（`docker ps` で確認し、`docker stop <コンテナ名>`）
+- `.env` で CourseHub 側のポートを変更する
+
+```
+APP_PORT=8000
+FORWARD_DB_PORT=33060
+FORWARD_PHPMYADMIN_PORT=8081
+VITE_PORT=5174
 ```
 
 ### キュー設定
@@ -68,7 +114,7 @@ QUEUE_CONNECTION=redis
 ## テスト
 
 ```bash
-php artisan test
+./vendor/bin/sail artisan test
 ```
 
 ## コーディング規約
