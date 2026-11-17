@@ -1,10 +1,10 @@
 ---
 name: lint
-description: コードの静的解析を実行する
+description: コードスタイルをチェックする（Laravel Pint）
 ---
 
-PHP CS Fixer でコードをチェックしてください。
+Laravel Pint でコードスタイルをチェックしてください（ファイルは変更しない）。
 
 ```bash
-./vendor/bin/php-cs-fixer fix --dry-run --diff
+./vendor/bin/sail pint --test
 ```
