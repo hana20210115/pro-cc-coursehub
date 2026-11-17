@@ -1,9 +1,31 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php artisan *)",
-      "Bash(composer *)",
-      "Bash(npm *)"
+      "Bash(./vendor/bin/sail artisan *)",
+      "Bash(./vendor/bin/sail composer *)",
+      "Bash(./vendor/bin/sail npm *)",
+      "Bash(./vendor/bin/sail pint *)",
+      "Bash(./vendor/bin/sail up *)",
+      "Bash(./vendor/bin/sail ps *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git switch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git pull *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)"
+    ],
+    "deny": [
+      "Bash(./vendor/bin/sail artisan migrate:fresh *)",
+      "Bash(./vendor/bin/sail artisan migrate:reset *)",
+      "Bash(./vendor/bin/sail artisan db:wipe *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)"
     ]
   }
 }
