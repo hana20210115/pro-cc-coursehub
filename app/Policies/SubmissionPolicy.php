@@ -15,9 +15,22 @@ class SubmissionPolicy
             return false;
         }
 
-        return Enrollment::where('user_id', $user->id)
+        // URL の quiz が course に属していること
+        if ($quiz->lesson->chapter->course_id !== $course->id) {
+            return false;
+        }
+
+        // 修了済みの受講生も再受験できるよう completed も許可する
+        $isEnrolled = Enrollment::where('user_id', $user->id)
             ->where('course_id', $course->id)
-            ->where('status', 'active')
+            ->whereIn('status', ['active', 'completed'])
             ->exists();
+
+        if (! $isEnrolled) {
+            return false;
+        }
+
+        // 合格済みの場合は再受験不可
+        return ! $quiz->isPassedBy($user->id);
     }
 }

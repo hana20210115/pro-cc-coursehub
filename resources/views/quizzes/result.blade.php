@@ -55,8 +55,43 @@
             @endforeach
         </div>
 
+        {{-- 受験履歴 --}}
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-3">受験履歴</h2>
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">回</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">受験日時</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">スコア</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">結果</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @foreach($submissions as $history)
+                            <tr>
+                                <td class="px-4 py-2 text-gray-700">{{ $submissions->count() - $loop->index }}</td>
+                                <td class="px-4 py-2 text-gray-700">{{ $history->submitted_at->format('Y/m/d H:i') }}</td>
+                                <td class="px-4 py-2 text-gray-900 font-medium">{{ $history->score }}%</td>
+                                <td class="px-4 py-2">
+                                    @if($history->score >= $quiz->passing_score)
+                                        <span class="text-green-600 font-medium">合格</span>
+                                    @else
+                                        <span class="text-red-600 font-medium">不合格</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="mt-8 flex flex-wrap gap-3">
-            <a href="{{ route('courses.quizzes.show', [$course, $quiz]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2.5 shadow-sm transition-all duration-150">再受験する</a>
+            @can('submit', [App\Models\Submission::class, $quiz, $course])
+                <a href="{{ route('courses.quizzes.show', [$course, $quiz]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2.5 shadow-sm transition-all duration-150">再受験する</a>
+            @endcan
             <a href="{{ route('courses.show', $course) }}" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg px-4 py-2.5 transition-all duration-150">コースに戻る</a>
         </div>
     </div>
