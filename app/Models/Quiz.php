@@ -35,4 +35,15 @@ class Quiz extends Model
     {
         return $this->hasMany(Submission::class);
     }
+
+    /**
+     * 指定ユーザーが合格点以上の提出をしているか
+     */
+    public function isPassedBy(int $userId): bool
+    {
+        return $this->submissions()
+            ->where('user_id', $userId)
+            ->where('score', '>=', $this->passing_score)
+            ->exists();
+    }
 }

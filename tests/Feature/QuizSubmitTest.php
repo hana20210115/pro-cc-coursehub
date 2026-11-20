@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Chapter;
 use App\Models\Course;
+use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\Option;
 use App\Models\Question;
@@ -34,6 +35,11 @@ class QuizSubmitTest extends TestCase
         $chapter = Chapter::factory()->create(['course_id' => $this->course->id]);
         $lesson = Lesson::factory()->create(['chapter_id' => $chapter->id]);
         $this->quiz = Quiz::factory()->create(['lesson_id' => $lesson->id]);
+
+        Enrollment::factory()->create([
+            'user_id' => $this->student->id,
+            'course_id' => $this->course->id,
+        ]);
     }
 
     public function test_score_is_100_when_all_answers_are_correct(): void

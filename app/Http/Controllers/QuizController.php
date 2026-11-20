@@ -14,6 +14,11 @@ class QuizController extends Controller
     {
         $this->authorize('view', $course);
 
+        if ($quiz->isPassedBy(auth()->id())) {
+            return redirect()->route('courses.quizzes.result', [$course, $quiz])
+                ->with('success', 'この小テストは合格済みです。');
+        }
+
         $quiz->load('questions.options');
 
         return view('quizzes.show', compact('course', 'quiz'));
@@ -21,6 +26,8 @@ class QuizController extends Controller
 
     public function submit(Request $request, Course $course, Quiz $quiz)
     {
+        $this->authorize('submit', [Submission::class, $quiz, $course]);
+
         $answers = $request->input('answers', []);
 
         $correctCount = 0;
@@ -52,11 +59,16 @@ class QuizController extends Controller
 
         $quiz->load('questions.options');
 
-        $submission = Submission::where('user_id', auth()->id())
+        $submissions = Submission::where('user_id', auth()->id())
             ->where('quiz_id', $quiz->id)
-            ->latest()
-            ->firstOrFail();
+            ->latest('submitted_at')
+            ->latest('id')
+            ->get();
 
-        return view('quizzes.result', compact('course', 'quiz', 'submission'));
+        abort_if($submissions->isEmpty(), 404);
+
+        $submission = $submissions->first();
+
+        return view('quizzes.result', compact('course', 'quiz', 'submission', 'submissions'));
     }
 }
