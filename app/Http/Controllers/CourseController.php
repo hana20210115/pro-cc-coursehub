@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
 use App\Models\Category;
+use App\Models\Course;
+use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CourseController extends Controller
 {
@@ -18,7 +20,7 @@ class CourseController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -51,6 +53,10 @@ class CourseController extends Controller
                 ->first();
         }
 
-        return view('courses.show', compact('course', 'enrollment'));
+        $reviews = $course->reviews()->with('user')->latest()->get();
+        $averageRating = $reviews->avg('rating');
+        $reviewPermission = Gate::inspect('create', [Review::class, $course]);
+
+        return view('courses.show', compact('course', 'enrollment', 'reviews', 'averageRating', 'reviewPermission'));
     }
 }
