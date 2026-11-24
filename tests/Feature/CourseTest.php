@@ -160,6 +160,17 @@ class CourseTest extends TestCase
         ]);
     }
 
+    public function test_course_creation_fails_with_invalid_input(): void
+    {
+        $response = $this->actingAs($this->coach)
+            ->from('/coach/courses/create')
+            ->post('/coach/courses', $this->coursePayload(['title' => '']));
+
+        $response->assertRedirect('/coach/courses/create');
+        $response->assertSessionHasErrors(['title' => 'コースタイトルは必須です。']);
+        $this->assertSame(0, Course::count());
+    }
+
     public function test_coach_cannot_create_course_with_duplicate_title(): void
     {
         Course::factory()->create([
