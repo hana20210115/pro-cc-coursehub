@@ -27,5 +27,20 @@
       "Bash(git push -f *)",
       "Bash(git reset --hard *)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in \"$CLAUDE_PROJECT_DIR\"/*.php) ;; *) exit 0 ;; esac; cd \"$CLAUDE_PROJECT_DIR\" && ./vendor/bin/sail exec laravel.test ./vendor/bin/pint \"${f#\"$CLAUDE_PROJECT_DIR\"/}\" >/dev/null 2>&1 || true",
+            "timeout": 60,
+            "statusMessage": "Running Pint..."
+          }
+        ]
+      }
+    ]
   }
 }
