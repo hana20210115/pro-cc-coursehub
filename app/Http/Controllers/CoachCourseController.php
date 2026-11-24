@@ -68,11 +68,6 @@ class CoachCourseController extends Controller
                 ]);
             }
 
-            // ============================================
-            // 4. Course レコード作成
-            // ============================================
-
-            // コースをデータベースに保存
             $course = Course::create([
                 'user_id' => auth()->id(),
                 'category_id' => $validated['category_id'],
@@ -82,41 +77,17 @@ class CoachCourseController extends Controller
                 'difficulty' => $validated['difficulty'],
                 'image_path' => $imagePath,
                 'status' => $validated['status'],
-                'published_at' => null, // 後で設定する
+                // 公開ステータスの場合のみ公開日時を設定（archived は新規作成時には選択不可）
+                'published_at' => $validated['status'] === 'published' ? now() : null,
             ]);
 
             $this->syncTags($course, $validated['tags'] ?? [], $validated['new_tags'] ?? null);
 
             $this->createInitialChapter($course);
 
-            // ============================================
-            // 7. ステータスに応じた published_at の設定
-            // ============================================
-
-            // 公開ステータスの場合は公開日時を設定
-            if ($validated['status'] === 'published') {
-                $course->update([
-                    'published_at' => now(),
-                ]);
-            }
-
-            // 下書きの場合は published_at は null のまま
-            // ※ archived は新規作成時には選択不可
-
-            // ============================================
-            // 8. リダイレクト
-            // ============================================
-
-            // コース一覧にリダイレクト（成功メッセージ付き）
             return redirect()->route('coach.courses.index')
                 ->with('success', 'コースを作成しました。');
-
         } catch (\Exception $e) {
-
-            // ============================================
-            // 9. エラーハンドリング
-            // ============================================
-
             // ログにエラーを記録
             \Log::error('コース作成エラー: '.$e->getMessage(), [
                 'user_id' => auth()->id(),
