@@ -87,17 +87,7 @@ class CoachCourseController extends Controller
 
             $this->syncTags($course, $validated['tags'] ?? [], $validated['new_tags'] ?? null);
 
-            // ============================================
-            // 6. 初期 Chapter の自動作成
-            // ============================================
-
-            // コース作成時に最初のチャプターを自動生成
-            // これにより、コーチがすぐにレッスンを追加できる
-            Chapter::create([
-                'course_id' => $course->id,
-                'title' => 'はじめに',
-                'order' => 1,
-            ]);
+            $this->createInitialChapter($course);
 
             // ============================================
             // 7. ステータスに応じた published_at の設定
@@ -212,6 +202,19 @@ class CoachCourseController extends Controller
         if (! empty($tagIds)) {
             $course->tags()->sync($tagIds);
         }
+    }
+
+    /**
+     * コース作成時に最初のチャプターを自動生成する
+     * これにより、コーチがすぐにレッスンを追加できる
+     */
+    private function createInitialChapter(Course $course): void
+    {
+        Chapter::create([
+            'course_id' => $course->id,
+            'title' => 'はじめに',
+            'order' => 1,
+        ]);
     }
 
     public function edit(Course $course)
