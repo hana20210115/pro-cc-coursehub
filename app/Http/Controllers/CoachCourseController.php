@@ -60,26 +60,6 @@ class CoachCourseController extends Controller
             $validated = $request->validated();
 
             // ============================================
-            // 2. スラッグ生成
-            // ============================================
-
-            // タイトルからスラッグを生成
-            $slug = Str::slug($validated['title']);
-
-            // 空のスラッグ対策（日本語タイトルの場合）
-            if (empty($slug)) {
-                $slug = 'course-'.time();
-            }
-
-            // スラッグの重複チェック
-            $originalSlug = $slug;
-            $slugCount = 1;
-            while (Course::where('slug', $slug)->exists()) {
-                $slug = $originalSlug.'-'.$slugCount;
-                $slugCount++;
-            }
-
-            // ============================================
             // 3. 画像アップロード処理
             // ============================================
 
@@ -112,7 +92,7 @@ class CoachCourseController extends Controller
                 'user_id' => auth()->id(),
                 'category_id' => $validated['category_id'],
                 'title' => $validated['title'],
-                'slug' => $slug,
+                'slug' => $this->generateUniqueSlug($validated['title']),
                 'description' => $validated['description'],
                 'difficulty' => $validated['difficulty'],
                 'image_path' => $imagePath,
@@ -206,6 +186,29 @@ class CoachCourseController extends Controller
                 'error' => 'コースの作成中にエラーが発生しました。もう一度お試しください。',
             ]);
         }
+    }
+
+    /**
+     * タイトルから重複しないスラッグを生成する
+     */
+    private function generateUniqueSlug(string $title): string
+    {
+        $slug = Str::slug($title);
+
+        // 空のスラッグ対策（日本語タイトルの場合）
+        if (empty($slug)) {
+            $slug = 'course-'.time();
+        }
+
+        // スラッグの重複チェック
+        $originalSlug = $slug;
+        $slugCount = 1;
+        while (Course::where('slug', $slug)->exists()) {
+            $slug = $originalSlug.'-'.$slugCount;
+            $slugCount++;
+        }
+
+        return $slug;
     }
 
     public function edit(Course $course)
